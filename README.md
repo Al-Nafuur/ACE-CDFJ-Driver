@@ -37,6 +37,8 @@ ACE-Driver:
 			dc.b "CDJF v1.0       "
 ```
 
+**NOTE**: The version string is `CDJF` and not `CDFJ` in order to distinguish it from CDFJ binaries compiled for the Harmony type cartridges. Failure to distinguish the two types of binary would likely result in confusion. 
+
 ## Custom Code
 
 #### Compilation
