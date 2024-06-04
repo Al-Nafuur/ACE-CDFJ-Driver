@@ -1,0 +1,135 @@
+Archive member included to satisfy reference by file (symbol)
+
+d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+                              bin/driver.o (memcpy)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libm.a
+LOAD bin/driver.o
+START GROUP
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libgcc.a
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a
+END GROUP
+START GROUP
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libgcc.a
+LOAD d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a
+END GROUP
+
+.text.emulate_ACEROM_cartridge
+                0x08028100      0x2f0
+ *(.text.emulate_ACEROM_cartridge*)
+ .text.emulate_ACEROM_cartridge
+                0x08028100      0x2f0 bin/driver.o
+                0x08028100                emulate_ACEROM_cartridge
+OUTPUT(bin/debugging.elf elf32-littlearm)
+LOAD linker stubs
+
+.glue_7         0x080283f0        0x0
+ .glue_7        0x080283f0        0x0 linker stubs
+
+.glue_7t        0x080283f0        0x0
+ .glue_7t       0x080283f0        0x0 linker stubs
+
+.vfp11_veneer   0x080283f0        0x0
+ .vfp11_veneer  0x080283f0        0x0 linker stubs
+
+.v4_bx          0x080283f0        0x0
+ .v4_bx         0x080283f0        0x0 linker stubs
+
+.text           0x080283f0        0x0
+ .text          0x080283f0        0x0 bin/driver.o
+ .text          0x080283f0        0x0 d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+
+.iplt           0x080283f0        0x0
+ .iplt          0x080283f0        0x0 bin/driver.o
+
+.text.memcpy    0x080283f0       0x1c
+ .text.memcpy   0x080283f0       0x1c d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+                0x080283f0                memcpy
+
+.rodata.DATA_MODER
+                0x0802840c        0x4
+ .rodata.DATA_MODER
+                0x0802840c        0x4 bin/driver.o
+                0x0802840c                DATA_MODER
+
+.rodata.DATA_ODR
+                0x08028410        0x4
+ .rodata.DATA_ODR
+                0x08028410        0x4 bin/driver.o
+                0x08028410                DATA_ODR
+
+.rodata.DATA_IDR
+                0x08028414        0x4
+ .rodata.DATA_IDR
+                0x08028414        0x4 bin/driver.o
+                0x08028414                DATA_IDR
+
+.rodata.ADDR_IDR
+                0x08028418        0x4
+ .rodata.ADDR_IDR
+                0x08028418        0x4 bin/driver.o
+                0x08028418                ADDR_IDR
+
+.rel.dyn        0x0802841c        0x0
+ .rel.iplt      0x0802841c        0x0 bin/driver.o
+
+.data           0x0802841c        0x0
+ .data          0x0802841c        0x0 bin/driver.o
+ .data          0x0802841c        0x0 d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+
+.igot.plt       0x0802841c        0x0
+ .igot.plt      0x0802841c        0x0 bin/driver.o
+
+.bss            0x0802841c        0x0
+ .bss           0x0802841c        0x0 bin/driver.o
+ .bss           0x0802841c        0x0 d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+
+.debug_info     0x00000000      0x440
+ .debug_info    0x00000000      0x440 bin/driver.o
+
+.debug_abbrev   0x00000000      0x140
+ .debug_abbrev  0x00000000      0x140 bin/driver.o
+
+.debug_loc      0x00000000      0x564
+ .debug_loc     0x00000000      0x564 bin/driver.o
+
+.debug_aranges  0x00000000       0x20
+ .debug_aranges
+                0x00000000       0x20 bin/driver.o
+
+.debug_ranges   0x00000000       0x48
+ .debug_ranges  0x00000000       0x48 bin/driver.o
+
+.debug_macinfo  0x00000000    0xd5e2a
+ .debug_macinfo
+                0x00000000    0xd5e2a bin/driver.o
+
+.debug_line     0x00000000      0xc20
+ .debug_line    0x00000000      0xc20 bin/driver.o
+
+.debug_str      0x00000000      0x2d5
+ .debug_str     0x00000000      0x2d5 bin/driver.o
+                                0x332 (size before relaxing)
+
+.comment        0x00000000       0x45
+ .comment       0x00000000       0x45 bin/driver.o
+                                 0x46 (size before relaxing)
+
+.ARM.attributes
+                0x00000000       0x34
+ .ARM.attributes
+                0x00000000       0x34 bin/driver.o
+ .ARM.attributes
+                0x00000034       0x34 d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)
+
+.debug_frame    0x00000000       0x5c
+ .debug_frame   0x00000000       0x34 bin/driver.o
+ .debug_frame   0x00000034       0x28 d:/programme/arm gnu toolchain arm-none-eabi/12.2 rel1/bin/../lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard\libc_nano.a(libc_a-memcpy-stub.o)

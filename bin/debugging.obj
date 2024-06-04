@@ -1,0 +1,489 @@
+
+bin/debugging.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text.emulate_ACEROM_cartridge:
+
+08028100 <emulate_ACEROM_cartridge>:
+#include "global.h"
+
+
+
+int emulate_ACEROM_cartridge()
+{
+ 8028100:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
+    uint8_t* ccm8 = (uint8_t*)0x10000000;
+    uint32_t* data32 = (uint32_t*)0x10000800;
+    uint8_t* data8 = (uint8_t*)0x10000800;
+
+	// copy buffer and preserving the lowest 16bytes of the buffer
+	memcpy(buffer8+0x8000, buffer8+0x1c, 0x10);
+ 8028104:	4ca2      	ldr	r4, [pc, #648]	; (8028390 <emulate_ACEROM_cartridge+0x290>)
+ 8028106:	4ea3      	ldr	r6, [pc, #652]	; (8028394 <emulate_ACEROM_cartridge+0x294>)
+ 8028108:	e894 000f 	ldmia.w	r4, {r0, r1, r2, r3}
+	uint8_t* download = (uint8_t*)*buffer32;
+ 802810c:	f04f 5500 	mov.w	r5, #536870912	; 0x20000000
+	bool (*reboot_into_cartridge_ptr)() =(bool(*)())(uint32_t)*buffer32;
+ 8028110:	68af      	ldr	r7, [r5, #8]
+	memcpy(buffer8+0x8000, buffer8+0x1c, 0x10);
+ 8028112:	e886 000f 	stmia.w	r6, {r0, r1, r2, r3}
+	memcpy(buffer8, download+0x100, 0x8000); // 32k and skipping the ACE header
+ 8028116:	682b      	ldr	r3, [r5, #0]
+ 8028118:	f44f 4200 	mov.w	r2, #32768	; 0x8000
+ 802811c:	f503 7180 	add.w	r1, r3, #256	; 0x100
+ 8028120:	4628      	mov	r0, r5
+ 8028122:	f000 f965 	bl	80283f0 <memcpy>
+	memcpy(buffer8+0x1c,buffer8+0x8000, 0x10);
+ 8028126:	e896 000f 	ldmia.w	r6, {r0, r1, r2, r3}
+ 802812a:	e884 000f 	stmia.w	r4, {r0, r1, r2, r3}
+	uint8_t *cartridge = buffer8 + 0x1000;
+
+	// currently selected bank. bank 6 on startup
+	uint8_t *bankPtr = cartridge + 0x6000;
+
+   if (!((bool (*)())reboot_into_cartridge_ptr)()) return 1;
+ 802812e:	47b8      	blx	r7
+ 8028130:	2800      	cmp	r0, #0
+ 8028132:	f000 80dd 	beq.w	80282f0 <emulate_ACEROM_cartridge+0x1f0>
+  \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+           Can only be executed in Privileged modes.
+ */
+__STATIC_FORCEINLINE void __disable_irq(void)
+{
+  __ASM volatile ("cpsid i" : : : "memory");
+ 8028136:	b672      	cpsid	i
+    __disable_irq();	// Disable interrupts
+						
+	bool fast_fetch = false, sample_mode = false;
+ 8028138:	2700      	movs	r7, #0
+	uint8_t *bankPtr = cartridge + 0x6000;
+ 802813a:	f5a6 5680 	sub.w	r6, r6, #4096	; 0x1000
+    uint16_t addr = 0, addr_prev = 0, addr_prev2 = 0 ;
+ 802813e:	4639      	mov	r1, r7
+ 8028140:	463b      	mov	r3, r7
+						// ldy immediate instructions
+					}
+				}
+			
+				DATA_OUT = output;
+				SET_DATA_MODE_OUT;
+ 8028142:	f245 5855 	movw	r8, #21845	; 0x5555
+				while (ADDR_IN == addr);
+				SET_DATA_MODE_IN;
+ 8028146:	46b9      	mov	r9, r7
+ 8028148:	e001      	b.n	802814e <emulate_ACEROM_cartridge+0x4e>
+ 802814a:	4619      	mov	r1, r3
+ 802814c:	4623      	mov	r3, r4
+		while (((addr = ADDR_IN) != addr_prev) || (addr != addr_prev2)) {
+ 802814e:	69ea      	ldr	r2, [r5, #28]
+ 8028150:	8814      	ldrh	r4, [r2, #0]
+ 8028152:	b2a4      	uxth	r4, r4
+ 8028154:	42a3      	cmp	r3, r4
+ 8028156:	d1f8      	bne.n	802814a <emulate_ACEROM_cartridge+0x4a>
+ 8028158:	42a1      	cmp	r1, r4
+ 802815a:	d001      	beq.n	8028160 <emulate_ACEROM_cartridge+0x60>
+ 802815c:	4623      	mov	r3, r4
+ 802815e:	e7f4      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+		if (addr & 0x1000) { 
+ 8028160:	04e3      	lsls	r3, r4, #19
+ 8028162:	d5fb      	bpl.n	802815c <emulate_ACEROM_cartridge+0x5c>
+			if (addr >= 0x1ff4 && addr <= 0x1ffb) {
+ 8028164:	f5a4 51ff 	sub.w	r1, r4, #8160	; 0x1fe0
+ 8028168:	f1a1 0314 	sub.w	r3, r1, #20
+ 802816c:	b29b      	uxth	r3, r3
+ 802816e:	2b07      	cmp	r3, #7
+ 8028170:	d821      	bhi.n	80281b6 <emulate_ACEROM_cartridge+0xb6>
+				if (addr == 0x1ff4) {
+ 8028172:	f641 73f4 	movw	r3, #8180	; 0x1ff4
+ 8028176:	429c      	cmp	r4, r3
+ 8028178:	d052      	beq.n	8028220 <emulate_ACEROM_cartridge+0x120>
+					bankPtr = &cartridge[(addr - 0x1ff5) * 0x1000 ];
+ 802817a:	0309      	lsls	r1, r1, #12
+ 802817c:	f101 56ff 	add.w	r6, r1, #534773760	; 0x1fe00000
+ 8028180:	f506 16f6 	add.w	r6, r6, #2015232	; 0x1ec000
+				uint8_t output = bankPtr[addr&0x0fff];
+ 8028184:	f3c4 030b 	ubfx	r3, r4, #0, #12
+ 8028188:	5cf1      	ldrb	r1, [r6, r3]
+				if (fast_fetch) {
+ 802818a:	b12f      	cbz	r7, 8028198 <emulate_ACEROM_cartridge+0x98>
+					if (output == LDA_IMMEDIATE) {
+ 802818c:	29a9      	cmp	r1, #169	; 0xa9
+ 802818e:	f000 8107 	beq.w	80283a0 <emulate_ACEROM_cartridge+0x2a0>
+					} else if (output == JMP_ABSOLUTE) {
+ 8028192:	294c      	cmp	r1, #76	; 0x4c
+ 8028194:	f000 80af 	beq.w	80282f6 <emulate_ACEROM_cartridge+0x1f6>
+ 8028198:	4622      	mov	r2, r4
+				DATA_OUT = output;
+ 802819a:	6a6b      	ldr	r3, [r5, #36]	; 0x24
+ 802819c:	7019      	strb	r1, [r3, #0]
+				SET_DATA_MODE_OUT;
+ 802819e:	6aa8      	ldr	r0, [r5, #40]	; 0x28
+				while (ADDR_IN == addr);
+ 80281a0:	69e9      	ldr	r1, [r5, #28]
+				SET_DATA_MODE_OUT;
+ 80281a2:	f8a0 8000 	strh.w	r8, [r0]
+				while (ADDR_IN == addr);
+ 80281a6:	880b      	ldrh	r3, [r1, #0]
+ 80281a8:	b29b      	uxth	r3, r3
+ 80281aa:	4293      	cmp	r3, r2
+ 80281ac:	d0fb      	beq.n	80281a6 <emulate_ACEROM_cartridge+0xa6>
+				SET_DATA_MODE_IN;
+ 80281ae:	f8a0 9000 	strh.w	r9, [r0]
+ 80281b2:	4623      	mov	r3, r4
+ 80281b4:	e7c9      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+			if (addr == 0x1ff0) {
+ 80281b6:	f641 73f0 	movw	r3, #8176	; 0x1ff0
+ 80281ba:	429c      	cmp	r4, r3
+ 80281bc:	d018      	beq.n	80281f0 <emulate_ACEROM_cartridge+0xf0>
+			} else if (addr == 0x1ff1) {
+ 80281be:	f641 73f1 	movw	r3, #8177	; 0x1ff1
+ 80281c2:	429c      	cmp	r4, r3
+ 80281c4:	d077      	beq.n	80282b6 <emulate_ACEROM_cartridge+0x1b6>
+			} else if (addr == 0x1ff2) {
+ 80281c6:	f641 73f2 	movw	r3, #8178	; 0x1ff2
+ 80281ca:	429c      	cmp	r4, r3
+ 80281cc:	f040 8089 	bne.w	80282e2 <emulate_ACEROM_cartridge+0x1e2>
+				while (ADDR_IN == addr);
+ 80281d0:	4621      	mov	r1, r4
+ 80281d2:	8813      	ldrh	r3, [r2, #0]
+ 80281d4:	b29b      	uxth	r3, r3
+ 80281d6:	428b      	cmp	r3, r1
+ 80281d8:	d0fb      	beq.n	80281d2 <emulate_ACEROM_cartridge+0xd2>
+				data = DATA_IN;
+ 80281da:	f04f 5300 	mov.w	r3, #536870912	; 0x20000000
+ 80281de:	6a1b      	ldr	r3, [r3, #32]
+ 80281e0:	781f      	ldrb	r7, [r3, #0]
+				fast_fetch = (data&0x0f) != 0x0f;
+ 80281e2:	f007 070f 	and.w	r7, r7, #15
+ 80281e6:	3f0f      	subs	r7, #15
+ 80281e8:	bf18      	it	ne
+ 80281ea:	2701      	movne	r7, #1
+				sample_mode = (data&0xf0) != 0xf0;
+ 80281ec:	4623      	mov	r3, r4
+ 80281ee:	e7ac      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+				while (ADDR_IN == addr);
+ 80281f0:	4621      	mov	r1, r4
+ 80281f2:	8813      	ldrh	r3, [r2, #0]
+ 80281f4:	b29b      	uxth	r3, r3
+ 80281f6:	428b      	cmp	r3, r1
+ 80281f8:	d0fb      	beq.n	80281f2 <emulate_ACEROM_cartridge+0xf2>
+				uint32_t v = ccm32[idx];
+ 80281fa:	f04f 5080 	mov.w	r0, #268435456	; 0x10000000
+				data = DATA_IN;
+ 80281fe:	f04f 5300 	mov.w	r3, #536870912	; 0x20000000
+				uint32_t v = ccm32[idx];
+ 8028202:	f8d0 2118 	ldr.w	r2, [r0, #280]	; 0x118
+				data = DATA_IN;
+ 8028206:	6a1b      	ldr	r3, [r3, #32]
+				data8[v >> FETCHER_SHIFT] = data;
+ 8028208:	0d11      	lsrs	r1, r2, #20
+ 802820a:	4401      	add	r1, r0
+				data = DATA_IN;
+ 802820c:	f893 c000 	ldrb.w	ip, [r3]
+				data8[v >> FETCHER_SHIFT] = data;
+ 8028210:	f881 c800 	strb.w	ip, [r1, #2048]	; 0x800
+				v += 1 << FETCHER_SHIFT;
+ 8028214:	f502 1280 	add.w	r2, r2, #1048576	; 0x100000
+ 8028218:	4623      	mov	r3, r4
+				ccm32[idx] = v;
+ 802821a:	f8c0 2118 	str.w	r2, [r0, #280]	; 0x118
+ 802821e:	e794      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+					bankPtr = &cartridge[0x6000];
+ 8028220:	4e5d      	ldr	r6, [pc, #372]	; (8028398 <emulate_ACEROM_cartridge+0x298>)
+				while (ADDR_IN == addr);
+ 8028222:	8813      	ldrh	r3, [r2, #0]
+ 8028224:	b29b      	uxth	r3, r3
+ 8028226:	42a3      	cmp	r3, r4
+ 8028228:	d0fb      	beq.n	8028222 <emulate_ACEROM_cartridge+0x122>
+				data = DATA_IN;
+ 802822a:	6a2b      	ldr	r3, [r5, #32]
+ 802822c:	7819      	ldrb	r1, [r3, #0]
+				DATA_OUT = 0xea; // NOP
+ 802822e:	6a6b      	ldr	r3, [r5, #36]	; 0x24
+				addr_prev = ADDR_IN;
+ 8028230:	f8b2 a000 	ldrh.w	sl, [r2]
+				DATA_OUT = 0xea; // NOP
+ 8028234:	22ea      	movs	r2, #234	; 0xea
+ 8028236:	701a      	strb	r2, [r3, #0]
+				SET_DATA_MODE_OUT;
+ 8028238:	6aab      	ldr	r3, [r5, #40]	; 0x28
+				switch(data){
+ 802823a:	29fe      	cmp	r1, #254	; 0xfe
+				addr_prev = ADDR_IN;
+ 802823c:	fa1f fa8a 	uxth.w	sl, sl
+				SET_DATA_MODE_OUT;
+ 8028240:	f8a3 8000 	strh.w	r8, [r3]
+				switch(data){
+ 8028244:	d001      	beq.n	802824a <emulate_ACEROM_cartridge+0x14a>
+						((int (*)())custom_entry_point)();
+ 8028246:	4b55      	ldr	r3, [pc, #340]	; (802839c <emulate_ACEROM_cartridge+0x29c>)
+ 8028248:	4798      	blx	r3
+				addr = ADDR_IN;
+ 802824a:	69ea      	ldr	r2, [r5, #28]
+ 802824c:	8811      	ldrh	r1, [r2, #0]
+ 802824e:	b289      	uxth	r1, r1
+				while (ADDR_IN == addr);
+ 8028250:	8813      	ldrh	r3, [r2, #0]
+ 8028252:	b29b      	uxth	r3, r3
+ 8028254:	428b      	cmp	r3, r1
+ 8028256:	d0fb      	beq.n	8028250 <emulate_ACEROM_cartridge+0x150>
+				DATA_OUT = 0x4c; // JMP
+ 8028258:	6a6b      	ldr	r3, [r5, #36]	; 0x24
+				addr = ADDR_IN;
+ 802825a:	8812      	ldrh	r2, [r2, #0]
+				DATA_OUT = 0x4c; // JMP
+ 802825c:	214c      	movs	r1, #76	; 0x4c
+ 802825e:	7019      	strb	r1, [r3, #0]
+				SET_DATA_MODE_OUT;
+ 8028260:	6aab      	ldr	r3, [r5, #40]	; 0x28
+				while (ADDR_IN == addr);
+ 8028262:	69e9      	ldr	r1, [r5, #28]
+				SET_DATA_MODE_OUT;
+ 8028264:	f8a3 8000 	strh.w	r8, [r3]
+				addr = ADDR_IN;
+ 8028268:	b292      	uxth	r2, r2
+				while (ADDR_IN == addr);
+ 802826a:	880b      	ldrh	r3, [r1, #0]
+ 802826c:	b29b      	uxth	r3, r3
+ 802826e:	4293      	cmp	r3, r2
+ 8028270:	d0fb      	beq.n	802826a <emulate_ACEROM_cartridge+0x16a>
+				DATA_OUT = (uint8_t)(addr_prev & 0x00ff);	// low byte of JMP addr
+ 8028272:	6a6b      	ldr	r3, [r5, #36]	; 0x24
+				addr = ADDR_IN;
+ 8028274:	880a      	ldrh	r2, [r1, #0]
+				DATA_OUT = (uint8_t)(addr_prev & 0x00ff);	// low byte of JMP addr
+ 8028276:	fa5f f18a 	uxtb.w	r1, sl
+ 802827a:	7019      	strb	r1, [r3, #0]
+				SET_DATA_MODE_OUT;
+ 802827c:	6aab      	ldr	r3, [r5, #40]	; 0x28
+				while (ADDR_IN == addr);
+ 802827e:	69e9      	ldr	r1, [r5, #28]
+				SET_DATA_MODE_OUT;
+ 8028280:	f8a3 8000 	strh.w	r8, [r3]
+				addr = ADDR_IN;
+ 8028284:	b292      	uxth	r2, r2
+				while (ADDR_IN == addr);
+ 8028286:	880b      	ldrh	r3, [r1, #0]
+ 8028288:	b29b      	uxth	r3, r3
+ 802828a:	4293      	cmp	r3, r2
+ 802828c:	d0fb      	beq.n	8028286 <emulate_ACEROM_cartridge+0x186>
+				DATA_OUT = (uint8_t)(addr_prev >> 8); // high byte of JMP addr
+ 802828e:	6a6b      	ldr	r3, [r5, #36]	; 0x24
+				addr = ADDR_IN;
+ 8028290:	880a      	ldrh	r2, [r1, #0]
+				DATA_OUT = (uint8_t)(addr_prev >> 8); // high byte of JMP addr
+ 8028292:	ea4f 2a1a 	mov.w	sl, sl, lsr #8
+ 8028296:	f883 a000 	strb.w	sl, [r3]
+				SET_DATA_MODE_OUT;
+ 802829a:	6aa8      	ldr	r0, [r5, #40]	; 0x28
+				while (ADDR_IN == addr);
+ 802829c:	69e9      	ldr	r1, [r5, #28]
+				SET_DATA_MODE_OUT;
+ 802829e:	f8a0 8000 	strh.w	r8, [r0]
+				addr = ADDR_IN;
+ 80282a2:	b292      	uxth	r2, r2
+				while (ADDR_IN == addr);
+ 80282a4:	880b      	ldrh	r3, [r1, #0]
+ 80282a6:	b29b      	uxth	r3, r3
+ 80282a8:	4293      	cmp	r3, r2
+ 80282aa:	d0fb      	beq.n	80282a4 <emulate_ACEROM_cartridge+0x1a4>
+				SET_DATA_MODE_IN;
+ 80282ac:	4623      	mov	r3, r4
+ 80282ae:	f8a0 9000 	strh.w	r9, [r0]
+ 80282b2:	4614      	mov	r4, r2
+ 80282b4:	e749      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+				while (ADDR_IN == addr);
+ 80282b6:	4621      	mov	r1, r4
+ 80282b8:	8813      	ldrh	r3, [r2, #0]
+ 80282ba:	b29b      	uxth	r3, r3
+ 80282bc:	428b      	cmp	r3, r1
+ 80282be:	d0fb      	beq.n	80282b8 <emulate_ACEROM_cartridge+0x1b8>
+				data = DATA_IN;
+ 80282c0:	f04f 5300 	mov.w	r3, #536870912	; 0x20000000
+				uint32_t v = ccm32[idx];
+ 80282c4:	f04f 5280 	mov.w	r2, #268435456	; 0x10000000
+				data = DATA_IN;
+ 80282c8:	6a1b      	ldr	r3, [r3, #32]
+ 80282ca:	7819      	ldrb	r1, [r3, #0]
+				uint32_t v = ccm32[idx];
+ 80282cc:	f8d2 3118 	ldr.w	r3, [r2, #280]	; 0x118
+				v <<= 8;
+ 80282d0:	021b      	lsls	r3, r3, #8
+				v &= FETCHER_MASK;
+ 80282d2:	f003 4370 	and.w	r3, r3, #4026531840	; 0xf0000000
+				v |= (uint32_t)data << FETCHER_SHIFT;
+ 80282d6:	ea43 5301 	orr.w	r3, r3, r1, lsl #20
+				ccm32[idx] = v;
+ 80282da:	f8c2 3118 	str.w	r3, [r2, #280]	; 0x118
+ 80282de:	4623      	mov	r3, r4
+ 80282e0:	e733      	b.n	802814a <emulate_ACEROM_cartridge+0x4a>
+			} else if (addr == 0x1ff3 || addr == 0x1ff4) {
+ 80282e2:	f1a1 0313 	sub.w	r3, r1, #19
+ 80282e6:	b29b      	uxth	r3, r3
+ 80282e8:	2b01      	cmp	r3, #1
+ 80282ea:	f63f af4b 	bhi.w	8028184 <emulate_ACEROM_cartridge+0x84>
+ 80282ee:	e798      	b.n	8028222 <emulate_ACEROM_cartridge+0x122>
+	while (ADDR_IN == addr);
+
+	((void (*)())ReturnVector)();
+
+	return 0;
+}
+ 80282f0:	2001      	movs	r0, #1
+ 80282f2:	e8bd 87f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, pc}
+						DATA_OUT = output;
+ 80282f6:	f04f 5200 	mov.w	r2, #536870912	; 0x20000000
+						SET_DATA_MODE_OUT;
+ 80282fa:	f245 5055 	movw	r0, #21845	; 0x5555
+						DATA_OUT = output;
+ 80282fe:	6a53      	ldr	r3, [r2, #36]	; 0x24
+ 8028300:	7019      	strb	r1, [r3, #0]
+						SET_DATA_MODE_OUT;
+ 8028302:	6a91      	ldr	r1, [r2, #40]	; 0x28
+						while (ADDR_IN == addr);
+ 8028304:	69d2      	ldr	r2, [r2, #28]
+						SET_DATA_MODE_OUT;
+ 8028306:	8008      	strh	r0, [r1, #0]
+						while (ADDR_IN == addr);
+ 8028308:	8813      	ldrh	r3, [r2, #0]
+ 802830a:	b29b      	uxth	r3, r3
+ 802830c:	42a3      	cmp	r3, r4
+ 802830e:	d0fb      	beq.n	8028308 <emulate_ACEROM_cartridge+0x208>
+						addr = ADDR_IN;
+ 8028310:	8812      	ldrh	r2, [r2, #0]
+						SET_DATA_MODE_IN;
+ 8028312:	2300      	movs	r3, #0
+ 8028314:	800b      	strh	r3, [r1, #0]
+						output = bankPtr[addr&0x0fff];
+ 8028316:	f3c2 030b 	ubfx	r3, r2, #0, #12
+						addr = ADDR_IN;
+ 802831a:	b292      	uxth	r2, r2
+						output = bankPtr[addr&0x0fff];
+ 802831c:	5cf1      	ldrb	r1, [r6, r3]
+						if ((output&FASTJMP_MASK) == 0x00 && output2 == 0x00) {
+ 802831e:	2901      	cmp	r1, #1
+ 8028320:	f63f af3b 	bhi.w	802819a <emulate_ACEROM_cartridge+0x9a>
+						uint8_t output2 = bankPtr[(addr+1)&0x0fff];
+ 8028324:	1c53      	adds	r3, r2, #1
+ 8028326:	f3c3 030b 	ubfx	r3, r3, #0, #12
+						if ((output&FASTJMP_MASK) == 0x00 && output2 == 0x00) {
+ 802832a:	5cf3      	ldrb	r3, [r6, r3]
+ 802832c:	2b00      	cmp	r3, #0
+ 802832e:	f47f af34 	bne.w	802819a <emulate_ACEROM_cartridge+0x9a>
+							uint32_t jmp = ccm32[jmpIdx];
+ 8028332:	0089      	lsls	r1, r1, #2
+ 8028334:	f101 5080 	add.w	r0, r1, #268435456	; 0x10000000
+							DATA_OUT = output;
+ 8028338:	f04f 5c00 	mov.w	ip, #536870912	; 0x20000000
+							uint32_t jmp = ccm32[jmpIdx];
+ 802833c:	f8d0 1098 	ldr.w	r1, [r0, #152]	; 0x98
+							DATA_OUT = output;
+ 8028340:	f8dc e024 	ldr.w	lr, [ip, #36]	; 0x24
+							int dataIdx = jmp >> FETCHER_SHIFT;
+ 8028344:	0d0b      	lsrs	r3, r1, #20
+							output = data8[dataIdx];
+ 8028346:	f103 5380 	add.w	r3, r3, #268435456	; 0x10000000
+							uint32_t jmp = ccm32[jmpIdx];
+ 802834a:	3098      	adds	r0, #152	; 0x98
+							output = data8[dataIdx];
+ 802834c:	f893 a800 	ldrb.w	sl, [r3, #2048]	; 0x800
+							jmp += 1 << FETCHER_SHIFT;
+ 8028350:	f501 1380 	add.w	r3, r1, #1048576	; 0x100000
+							ccm32[jmpIdx] = jmp;
+ 8028354:	6003      	str	r3, [r0, #0]
+							DATA_OUT = output;
+ 8028356:	f88e a000 	strb.w	sl, [lr]
+							SET_DATA_MODE_OUT;
+ 802835a:	f8dc e028 	ldr.w	lr, [ip, #40]	; 0x28
+							while (ADDR_IN == addr);
+ 802835e:	f8dc a01c 	ldr.w	sl, [ip, #28]
+							SET_DATA_MODE_OUT;
+ 8028362:	f245 5c55 	movw	ip, #21845	; 0x5555
+ 8028366:	f8ae c000 	strh.w	ip, [lr]
+							while (ADDR_IN == addr);
+ 802836a:	f8ba c000 	ldrh.w	ip, [sl]
+ 802836e:	fa1f fc8c 	uxth.w	ip, ip
+ 8028372:	4594      	cmp	ip, r2
+ 8028374:	d0f9      	beq.n	802836a <emulate_ACEROM_cartridge+0x26a>
+							dataIdx = jmp >> FETCHER_SHIFT;
+ 8028376:	0d1b      	lsrs	r3, r3, #20
+							jmp += 1 << FETCHER_SHIFT;
+ 8028378:	f501 1c00 	add.w	ip, r1, #2097152	; 0x200000
+							output = data8[dataIdx];
+ 802837c:	f103 5380 	add.w	r3, r3, #268435456	; 0x10000000
+							SET_DATA_MODE_IN;
+ 8028380:	2100      	movs	r1, #0
+ 8028382:	f8ae 1000 	strh.w	r1, [lr]
+							output = data8[dataIdx];
+ 8028386:	f893 1800 	ldrb.w	r1, [r3, #2048]	; 0x800
+							ccm32[jmpIdx] = jmp;
+ 802838a:	f8c0 c000 	str.w	ip, [r0]
+ 802838e:	e704      	b.n	802819a <emulate_ACEROM_cartridge+0x9a>
+ 8028390:	2000001c 	.word	0x2000001c
+ 8028394:	20008000 	.word	0x20008000
+ 8028398:	20007000 	.word	0x20007000
+ 802839c:	20000809 	.word	0x20000809
+						DATA_OUT = output;
+ 80283a0:	f04f 5200 	mov.w	r2, #536870912	; 0x20000000
+						SET_DATA_MODE_OUT;
+ 80283a4:	f245 5055 	movw	r0, #21845	; 0x5555
+						DATA_OUT = output;
+ 80283a8:	6a53      	ldr	r3, [r2, #36]	; 0x24
+ 80283aa:	7019      	strb	r1, [r3, #0]
+						SET_DATA_MODE_OUT;
+ 80283ac:	6a91      	ldr	r1, [r2, #40]	; 0x28
+						while (ADDR_IN == addr);
+ 80283ae:	69d2      	ldr	r2, [r2, #28]
+						SET_DATA_MODE_OUT;
+ 80283b0:	8008      	strh	r0, [r1, #0]
+						while (ADDR_IN == addr);
+ 80283b2:	8813      	ldrh	r3, [r2, #0]
+ 80283b4:	b29b      	uxth	r3, r3
+ 80283b6:	42a3      	cmp	r3, r4
+ 80283b8:	d0fb      	beq.n	80283b2 <emulate_ACEROM_cartridge+0x2b2>
+						addr = ADDR_IN;
+ 80283ba:	8812      	ldrh	r2, [r2, #0]
+						SET_DATA_MODE_IN;
+ 80283bc:	2300      	movs	r3, #0
+ 80283be:	800b      	strh	r3, [r1, #0]
+						output = bankPtr[addr&0x0fff];
+ 80283c0:	f3c2 030b 	ubfx	r3, r2, #0, #12
+						addr = ADDR_IN;
+ 80283c4:	b292      	uxth	r2, r2
+						output = bankPtr[addr&0x0fff];
+ 80283c6:	5cf1      	ldrb	r1, [r6, r3]
+						if (output >= DATASTREAM_OFFSET && output <= DATASTREAM_OFFSET+DSCOMM) {
+ 80283c8:	2920      	cmp	r1, #32
+ 80283ca:	f63f aee6 	bhi.w	802819a <emulate_ACEROM_cartridge+0x9a>
+							int dsIdx = (FETCHER_BASE + (reg * 4)) >> 2;
+ 80283ce:	3126      	adds	r1, #38	; 0x26
+							uint32_t ds = ccm32[dsIdx];
+ 80283d0:	0088      	lsls	r0, r1, #2
+ 80283d2:	f100 5080 	add.w	r0, r0, #268435456	; 0x10000000
+ 80283d6:	6803      	ldr	r3, [r0, #0]
+							ds += (inc << INCREMENT_SHIFT);
+ 80283d8:	f8d0 108c 	ldr.w	r1, [r0, #140]	; 0x8c
+ 80283dc:	eb03 3c01 	add.w	ip, r3, r1, lsl #12
+							int dataIdx = (int)(ds >> FETCHER_SHIFT);
+ 80283e0:	0d1b      	lsrs	r3, r3, #20
+							output = data8[dataIdx];
+ 80283e2:	f103 5380 	add.w	r3, r3, #268435456	; 0x10000000
+ 80283e6:	f893 1800 	ldrb.w	r1, [r3, #2048]	; 0x800
+							ccm32[dsIdx] = ds;
+ 80283ea:	f8c0 c000 	str.w	ip, [r0]
+ 80283ee:	e6d4      	b.n	802819a <emulate_ACEROM_cartridge+0x9a>
+
+Disassembly of section .text.memcpy:
+
+080283f0 <memcpy>:
+ 80283f0:	440a      	add	r2, r1
+ 80283f2:	4291      	cmp	r1, r2
+ 80283f4:	f100 33ff 	add.w	r3, r0, #4294967295
+ 80283f8:	d100      	bne.n	80283fc <memcpy+0xc>
+ 80283fa:	4770      	bx	lr
+ 80283fc:	b510      	push	{r4, lr}
+ 80283fe:	f811 4b01 	ldrb.w	r4, [r1], #1
+ 8028402:	f803 4f01 	strb.w	r4, [r3, #1]!
+ 8028406:	4291      	cmp	r1, r2
+ 8028408:	d1f9      	bne.n	80283fe <memcpy+0xe>
+ 802840a:	bd10      	pop	{r4, pc}

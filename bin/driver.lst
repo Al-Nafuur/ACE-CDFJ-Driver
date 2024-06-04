@@ -1,0 +1,58 @@
+------- FILE src/ace.asm LEVEL 1 PASS 2
+      1  0800 ????
+      2  0800 ????				      processor	6502
+      3  0800 ????
+      4  0800 ????				      SEG	BANK00
+      5  0000					      ORG	$0000
+      6  0000					      RORG	$0000
+      7  0000
+      8  0000				   ACE-UF00
+      9  0000		       41		      .byte.b	$41
+     10  0001		       43		      .byte.b	$43
+     11  0002		       45		      .byte.b	$45
+     12  0003		       2d		      .byte.b	$2D
+     13  0004		       55		      .byte.b	$55
+     14  0005		       46		      .byte.b	$46
+     15  0006		       30		      .byte.b	$30
+     16  0007		       30		      .byte.b	$30
+     17  0008
+     18  0008
+     19  0008				   ACE-Driver
+     20  0008							; driver name should always begin with the string "CDaFJ " (including the space)
+     21  0008							;
+     22  0008							; it should also include a version string of the form "vX.Y" where X and Y are
+     23  0008							; integers
+     24  0008							;
+     25  0008							; nothing else should be included in the driver name apart from whitespace
+     26  0008							;
+     27  0008							; finally, the driver name should be exactly string 16 chars wide exactly 
+     28  0008							;		  "		   "
+     29  0008		       43 44 61 46*	      dc.b	"CDaFJ v1.00	  "
+     30  0018
+     31  0018				   ACE-Driver-Version
+     32  0018		       00		      .byte.b	$00
+     33  0019		       00		      .byte.b	$00
+     34  001a		       00		      .byte.b	$00
+     35  001b		       00		      .byte.b	$00
+     36  001c
+     37  001c				   ACE-RomSize
+     38  001c		       00 80 00 00	      .long.l	$8000
+     39  0020
+     40  0020				   ACE-RomChecksum
+     41  0020		       00		      .byte.b	$00
+     42  0021		       00		      .byte.b	$00
+     43  0022		       00		      .byte.b	$00
+     44  0023		       00		      .byte.b	$00
+     45  0024
+     46  0024				   ACE_Offset
+     47  0024		       31 00 00 00	      .long.l	ARMCODE + $00000001	; + $08020200
+     48  0028		       44 50 43 70*	      dc.b	"DPCpUF0"
+     49  002f
+     50  0030		       00		      align	16
+     51  0030				   ARMCODE
+     52  0030					      incbin	"driver.bin"
+     53  034c
+     54  07ff					      org	$07ff
+     55  07ff		       00		      .byte.b	$00
+     56  0800
+     57  0800					      END
